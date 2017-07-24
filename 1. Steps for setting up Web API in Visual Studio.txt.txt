@@ -1,0 +1,178 @@
+	I downloaded Visual Studio Community 2017 from https://www.visualstudio.com/downloads/ and set it to
+		install automatically when complete.
+	In the install configuration process, there's a dialogue where you pick what components (SDKs) you want to
+		install with Visual Studio.  I picked, under Web & Cloud, "ASP.NET and web development"
+		"Azure development", and "Data storage and processing" (total install size: 6.9GB, took 2 hours
+		on the network I was on).
+		Then I clicked on the install button.
+		Once the install is done, you can click "launch" to start Visual Studio 2017 Community and then close
+		the installer.
+	Note:  In comparing Enterprise and Community versions, the biggest difference that I can see is that
+		Community lacks CodeLense, a nifty feature that lets you see more data about .NET classes by
+		hovering over them in the code.  Missing it is NOT a show-stopper, may just take a bit longer to
+		troubleshoot problems sometimes.
+
+	Making a new project:
+		Click the "File" menu option in Visual Studio Community 2017 (top left), 
+		then "New" (first option), then "Project".
+		In the "New Project" menu dialogue that comes up, select "ASP.NET Core Web Application (.NET Core)".
+			- this is under Templates/Visual C#/Web
+		Finally, in the second menu dialogue, select "Web API" and click OK.  Also at this dialogue, I
+			checked the checkbox to enable Docker support.
+		Note that there's an option to add the project to source control.  This creates git repo tracking files
+			in the project folder and allows you to use Team Explorer to coordinate commits with team
+			members - see this link for more details: https://www.visualstudio.com/en-us/docs/git/share-your-code-in-git-vs-2017
+]
+
+TODO (from my programming flight's feedback):  configure Visual Studio to use the Nuget Package manager and guide
+	the students through installing Jquery with it. We may just offer virtual environments with Visual Studio preconfigured, but I will still have these steps.
+
+
+To create a new .NET Web API project:
+Open Visual Studio and go to the "File" menu option (top left), left-click it.
+Select "New" (first option on the menu that drops down), then select the "Project" sub-option.
+In the "New Project" dialogue box that comes up, select the "Web" option (it's under Templates/Visual C#).
+In the "Web" project templates (to the right when you have "Web" selected), select "ASP.NET Web Application (.NET Framework).
+Just in case you already have a "WebApplication1" named project, change the name of the project if necessary before
+clicking "OK" (the "OK" button is in the bottom right of the dialogue box).  Also, if you already have another project
+in this solution and want to add another, select the "Add to solution" option from the "Solution" field (it's below
+the project name and location fields).
+
+Once you click "OK", you will get another dialogue box to specify which specific type of ASP.NET web project template
+you want to use.  Select "Web API" (this gives us the most flexibility to use Javascript View APIs, like React.js or AngularJS, 
+instead of the default Microsoft provided views) and click "OK".  Note that for Web API project templates, it will still
+include the MVC folders and references, so you still have access to them (the difference between MVC and Web API is just
+that MVC returns a view with the HTML, but when communicating between a web page and Web API, we just send/receive JSON data after getting the web page).
+
+Now, for our first step in our project to give us a place to start working on our code,
+we're going to setup a basic controller that will respond to web requests from our view (which will be HTML and
+Javascript in a web browser).  Specifically, the project code, along with the controller we're setting up now, will
+run on a Web Server.  The view (HTML / Javascript) will run on people's browsers.  This gives us a great deal of
+flexibility because just about every computer and operating system has a browser.  We will also be able to allow
+anyone, anywhere in the world to connect to our system via the internet (or not, works just as well on a LAN if you
+don't have the web server's port forwarded via your router).  If you want to read more about this step, enter these
+search terms on your favorite search engine (Google, Bing, Yahoo, etc):  "how to map Web API controllers".
+The first result I got was "Routing in ASP.NET Web API | Microsoft Docs".  Note that with the release of ASP.NET Core
+on June 27, 2016 (it's open source), routing is handled the same whether you are doing an MVC or Web API project.
+
+In order to add a controller, first right-click on your project name in the Solution Explorer tab in Visual Studio
+(the project must be open).  Click on "Add", then "New Item", and in the resulting dialogue box select "Web API"
+(it's in "Visual C#" sub opton "Web").  Change your controller's name to something you will remember
+(I called mine "BasicController.cs").  It will create an automatically filled in class structure for you.
+
+Note:  there are a few basic interaction types between the view and controller which you should know.
+These are:  GET, POST, PUT, DELETE (there is also PATCH, but I haven't seen a good reason to use it, as PUT does that).
+Description of each:  
+(Return code 200 means everything's OK.  404 means it didn't find that ID.  405 means method not allowed, which
+may mean you tried to modify the whole collection/every item of that type you have)
+
+GET - you provide an ID, it provides the data of the item with that ID.
+POST - you provide data, the application will create a new item with that data (automatically creating an ID).
+(if you get an error code 409 with a POST, you probably gave it an ID - there's a conflict with an already existing
+item)
+PUT - you provide an ID and new data, and that item's data is updated.
+DELETE - you provide an ID, and the item with matching ID is deleted.
+
+Now that we have a basic controller that has some methods, we will add a view.
+Note:  In our HTML pages, we will use something called "AJAX" to talk to the controller.  This is just Javascript
+that opens up a connection and sends a request.  Also note that if you try to change the URL from the server you
+got the webpage from, you will run up against something called "CORS", which is the web browser's security model.
+It's by default configured to only allow Javascript to communicate with whatever server you go that webpage from.
+This helps prevent something called "cross site scripting" (that's where a malicious person puts Javascript in as
+data into a websystem, hoping that another user will grab it and it'll trigger the code in their browser).
+For our first view, I'm going to use the most basic example possible, while giving you another jump off point
+for further exploration.  We're going to use a feature in Jquery that lets us specify an element in the HTML to load
+the data into, give our request URL, and it automatically does the AJAX for us.
+https://www.w3schools.com/jquery/jquery_ajax_load.asp
+
+First, add a template HTML page to the project:  right click the project in the Solution Explorer tab, click "Add",
+and select "HTML Page".  It will create an absolutely barebones HTML page for you.  Now, add Jquery by adding this
+line to the HTML page - put it right before the </body> tag:
+<script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
+See this reference for why you should load scripts at the end of the HTML page:
+https://stackoverflow.com/questions/2105327/should-jquery-code-go-in-header-or-footer
+
+Note:  In order to use Jquery, you can either download it and point your HTML at the downloaded file, or you can
+point to a "CDN" as we're doing above.  Here are some Jquery CDNs you can use:
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+Finally, to give us a barebones AJAX request we can use to test our controller:
+Add this HTML between your <body> and </body> tags, but above the Jquery CDN reference:
+<div id="div1"><h2>Let jQuery AJAX Change This Text</h2></div>
+<button>Get External Content</button>
+
+Add this script just after the CDN reference, above the </body> tag:
+<script>
+$(document).ready(function(){
+    $("button").click(function(){
+        $("#div1").load("demo_test.txt #p1");
+    });
+});
+</script>
+
+Note:  The Jquery library uses the "$" character to represent itself - so if you type $, you can access any of
+the methods in the library from your script.
+
+When you're done, your HTML body tags should have this between them (you may have picked a different CDN):
+	<div id="div1"><h2>Let jQuery AJAX Change This Text</h2></div>
+	<button>Get External Content</button>
+
+	<script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
+	<script>
+		$(document).ready(function(){
+			$("button").click(function(){
+				$("#div1").load("demo_test.txt #p1");
+			});
+		});
+	</script>
+
+Now, one more thing before this is ready to go.  We need to change the "demo_test.txt" in the script above
+to the URL for our controller.  Change it to match this pattern:  controller name/method name ID
+You can keep #p1 in there.Here's what mine looks like now:  $("#div1").load("api/Basic/Get/0");
+If you changed your controller name to something else, make sure to substitute your controller name instead of
+"BasicController".  If you look in your controller, you can see the methods and that Get is one of them.
+Note that regardless of what number we give that method, it will always return "value".  Therefore, right now
+you could specify any number, not just "0".
+Note:  Web API appends "Controller" to "Basic" to get "BasicController", which matches my controller class name.
+"Get" is the method that will get ran.  "0" is the value that gets loaded into the ID parameter of the Get method.
+
+Now, one last configuration change before the project will support the above:
+Go to the Solution Explorer in Visual Studio again, expand the App_Start folder, and open the WebApiConfig.cs file.
+Change the first mapping to look like this (I set "Get" to be the default action and the ID to be constrained to be
+an integer):
+			config.Routes.MapHttpRoute(
+				name: "DefaultApi",
+				routeTemplate: "api/{controller}/{id}",
+				defaults: new { action = "Get", id = RouteParameter.Optional },
+				constraints: new { id = @"\d" }
+			);
+
+Below that add another route mapping:
+			config.Routes.MapHttpRoute(
+				name: "BasicActionRoute",
+				routeTemplate: "api/{controller}/{action}/{id}",
+				defaults: new { id = RouteParameter.Optional }
+				constraints: new { id = @"\d" }
+			);
+
+Now you can specify the method name in the controller that you want to access.
+
+All right, just click on the run button in Visual Studio.  The Edge browser will come up 
+(I'm using Windows 10 Student Enterprise, which I also downloaded from umsl.onthehub.com / also received a product key).
+Let me show you a trick.  Press F12 to get Edge's Developer Tools to come up 
+(typically this is the shortcut on all browsers to view the developer tools, 
+from which you can see all the elements of the HTML and what's in them, debug the
+Javascript as it's in action, and view the network requests and responses).
+Try looking at the debugger tab (shows you the HTML page source), then open up the Network tab and click the
+"Get External Content" button on the HTML page in your browser.
+You'll be able to see the status of the network requests.
+
+Now, go into Visual Studio and open the BasicController.  Go to the Get method and click on the gray vertical bar
+to the left of it.  You should see a solid red circle appear.  This is called a "breakpoint".  It will stop
+execution of the code right at the method (if you placed the red circle directly to the left of the method) when
+the program reaches it (which should be just after you click on the button in the HTML page from your browser).
+When the program stops on the breakpoint, you can see the contents of any variables the program can see there
+(for instance, if you're in a method, you'll see the contents of local method variables/parameters, as well as
+the contents of any global variables).

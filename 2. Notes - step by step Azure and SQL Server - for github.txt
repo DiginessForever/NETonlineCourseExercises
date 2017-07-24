@@ -1,0 +1,88 @@
+﻿Azure:
+Create an Azure account.  If you are a student or a developer for a company, see them about any student specials or developer subscriptions they have
+with Microsoft.  Sometimes you can get 50 hours free per month this way in order to learn how to use it.
+
+Once you are in, you can get to your Azure dashboard by going to https://portal.azure.com
+
+To create a database:
+Click on "SQL Database" on the left of the dashboard.
+Click on "Add".
+In the panel that comes up to the right:
+	Give the database a name, and select "Microsoft Imagine" (default option) as the Subscription.
+	Create a new resource group, giving it a name in the next field.
+	Select "Blank Database" as the source.
+	Click on server, then in the the panel that comes up to the right:
+		Click on "Create new server".  In the panel to the right:
+			give the server a unique name.
+			Give an admin name and password (write them down, or you won't be able to communicate with the database / will have to 
+				delete the database and recreate it, writing it down the next time).
+			Set the location to Central US
+			Make sure the box to allow azure services to access the server is checked.
+			Click the "select" button at the bottom of the panel to create the server.
+
+Click on the "Pin to dashboard" checkbox.
+Click the "Create" button (in the rightmost panel still open).
+
+You will be taken back to the dashboard and a blue box will appear to the right with
+the words "Deploying SQL Database".  We have a 5DTU resource available now.
+
+----
+Now that you have a SQL Server resource and a database on it, go to the following page for final configuration (firewall setup):
+https://imagine.microsoft.com/en-us/Catalog/Product/99
+Click on SQL Server, then on the next page click on Azure Portal, it will take you here:
+https://docs.microsoft.com/en-us/azure/sql-database/sql-database-get-started-portal
+
+Talking to the database:
+0.  Click on Firewall Rules -
+	make sure that there's a rule in your router and OS firewalls that allows your IP address to access the database (allows inbound/outbound 
+	TCP traffic on port 1433)
+	- Your application will be able to talk to the database from Azure once it's deployed, but while you are in Visual Studio debugging it,
+	you will need the firewall port rule applied.
+	.  In order to find your IP
+	address, go to Google and enter "my IP".  It will show you your public IP - use that as a firewall rule if it is not already present.
+	If you go to a different network, you will have to do this again / adding another rule for your new IP.  Don't forget to remove your
+	old one if necessary (IPs are often also dynamically assigned from a pool each time you connect to a public wifi, so you may have to
+	create a new rule each time you connect to wifi, as you will have a different IP address each time).
+1.  Now, click on the database name.
+2.  Click on the link to show database connection strings.
+3.  Open SQL Server Management Studio (SSMS - you should have installed it earlier in this exercise).  --note:  You can also connect from Visual Studio - the
+	Azure dashboard even has a button that will open up Visual Studio and go to the connection wizard for you, pre-filling most of the information in that form.
+4.  Connect to the URL given in the connection string - (if you are using a different SQL client than above, or Microsoft makes considerable changes to these,
+	you may have to specify port 1433 as well by adding ":1433" to the end of the database URL).
+5.  Use your admin username / pass you created for the database to log in.
+6.  You can now make a new query and send SQL commands / queries to the database.
+
+Note:  When I first tried to connect to my database from UMSL's network (using wifi), I kept getting erors about with the text "semaphore timeout period expired"
+	and telling me there was a problem with the pre-login handshake.  I submitted a support request to Microsoft after spending hours port scanning and
+	reading forums about the error (none of which helped at all).  The Microsoft technician had me try to connect to one of his databases with his credentials,
+	and it didn't work, so he had me create a mobile hotspot with my phone (why didn't I think of that?).  I could then connect, no error.
+	So the semaphore time-out error is telling you that there's basically a network or OS firewall problem and you need to open the port on your network's/OS's
+	firewalls.
+
+
+Configuring your .NET project to talk to the database:
+1.  Open your .NET project back up (the one we made in the Web API mapping exercise).
+2.  Open up the Web.config file (go to the Solution Explorer panel, expand the project, and scroll down within the project's main folder to the bottom to find it).
+3.  Create a new key in the <AppSettings> section of the Web.config file, and name the key something like "MyAzureDatabaseConnectionString".
+4.  In the key's value, place the database connection string of your Azure database (to find this, go to your database in the Azure portal dashboard and click
+	on "connection strings" - Don't forget to change the username and password to your database admin user/pass).
+For an example of what it should look like now (this is not my real servername/user/pass):
+<appSettings>
+    <add key="webpages:Version" value="3.0.0.0" />
+    <add key="webpages:Enabled" value="false" />
+    <add key="ClientValidationEnabled" value="true" />
+    <add key="UnobtrusiveJavaScriptEnabled" value="true" />
+    <add key="AzureSQLServerDatabase" value="Server=tcp:myserver.database.windows.net,1433;Initial Catalog=testdb;Persist Security Info=False;User ID=adminuser;Password=mypassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"/>
+</appSettings>
+
+Note:  On the above, change the catalog name to the name of the database you configured.  Change your username and password to that of the database admin user that
+	you set up (I put a non-applicable username/password combo in).  Change "myserver" to the name of your database server on Azure (not the same thing as the
+	database name, unless you set it up that way).
+
+5.  Install Entity Framework via Nuget:
+	In Visual Studio, right click on the solution in Solution Explorer, then click "Manage Nuget Packages for Solution".
+	In the Nuget window, click Browse, and type "Entity Framework" in the search field.  Click on Entity Framework and install it for your project.
+
+The project is now ready for us to add code to it to talk to the database.  We will do that in the next tutorial.
+
+
