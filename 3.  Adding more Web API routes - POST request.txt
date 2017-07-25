@@ -1,0 +1,102 @@
+This helped me quite a bit to understand how to pass JSON data to the controller -
+in Web API, you have to have a model class that exactly matches the properties in
+the JSON data you are sending.  Web API will map it to that object.  You also
+make sure to have the parameter be the model type.
+https://stackoverflow.com/questions/20226169/how-to-pass-json-post-data-to-web-api-method-as-object
+
+So, starting with another AJAX method on our html page, put this between <script> and </script> tags:
+$("button").click(
+            function () {
+                var customer = { Id:null, Name: "Scott", EmailAddress: "SomeExampleEmail@live.com" };
+                $.ajax({
+                    type: "POST",
+                    data: JSON.stringify(customer),
+                    url: "api/Basic",
+                    contentType: "application/json"
+                });
+            });
+
+Note:  You may have to replace the earlier one so it doesn't get confused between which
+one to call when you click the button (or make another button).
+
+Overview:  The customer variable contains JSON data - check out how it's formatted.
+The .ajax section can be used for all the different types of REST functions:
+GET, PUT, POST, and DELETE.
+The type property is what Web API looks at to know what method in the controller to call
+for this.  It will map to the method named "Post".
+For data, you can see we're putting the customer variable in there and sending it as
+a string.  In our Post method in the controller, we use 
+Post([FromBody] Customer customer) and the Web API object mapper puts all the
+properties and their values into a customer object - note that we have to have a
+class called Customer on the .NET side, and it has to have matching properties or
+we'll end up with the customer parameter being null in our controller's post method.
+
+Here's the Customer class:
+-------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.ComponentModel.DataAnnotations; //Allows the [Key] to indicate to Entity Framework that a variable is the primary key.
+
+namespace WebApplication2.Models
+{
+    public class Customer
+    {
+        public Customer()
+        {
+        }
+
+        //TO DO:  Set up visibility correctly.
+        [Key]
+        public int Id { get; set; }
+        public String Name { get; set; }
+        public String EmailAddress { get; set; }
+    }
+}
+
+---------------------------
+Also, I put this mapping in the WebApiConfig.cs class:
+
+config.Routes.MapHttpRoute(
+                name: "Route",
+                routeTemplate: "api/{controller}"
+            );
+
+---------------------------
+Finally, here's the Post() method in the controller - which is called BasicController.cs in my case (I found out the hard way
+about having to have a matching class, still looking for a way to do general
+parsing of generic data (those lines are currently commented out):
+---------------------------
+
+	// POST /api/<controller>
+        public HttpResponseMessage Post([FromBody] Customer customer)
+		{
+            //Get json into customer:
+            //Customer customerToSave = Newtonsoft.Json.JsonConvert.DeserializeObject<Customer>(data);
+            //Going from customer to json:
+            //string output = JsonConvert.SerializeObject(product);
+            using (var db = new AzureDbContext())
+            {
+                //db.Customer.Add(customer);  //We'll do this in the next tutorial.
+                //db.SaveChanges();
+            }
+
+            return Request.CreateResponse("Customer saved, thank you.");
+
+            //Note:  There is a lot on the web about serializing and deserializing (converting from json string into the model / customer object and back to json),
+            //but when I tried it, Web API always gave me null values.  It wasn't until I sent the exact correct properties to match the Customer object (from the
+            //jquery javascript AJAX Post request method) that I got any data in this method's customer parameter.
+        }
+----------------------------
+So here's what happens when you click the button:
+1.  Jquery intercepts the button click event, calling the javascript function (first snippet of code above).
+2.  The javascript function prepares a request, puts the JSON formatted string with the customer data in it (from the customer variable),
+	and sets the data type to "application/JSON" (important).  It sets the request type to POST and sends it to the server to the /api/Basic URI.
+3.  The server Web API looks at the route mappings in WebApiConfig.cs and finds the first match, "api/{controller}".  Since "Basic" is in the {controller} position,
+	it adds Controller to it to get BasicController.cs.  Then it calls the method named after the request type in BasicController.cs, passing control to
+	BasicController.Post().  While passing control, Web API's object mapper looks at the parameter of the post method ([FromBody] Customer customer), sees
+	that it's supposed to get the parameter from the body of the request, then grabs the JSON data, looks for a matching Class to map it to, finds Customer.cs,
+	and finally puts the mapped Customer.cs object instance in the Post() customer paramater.
+4.  We are now in the controller code block and have data in the customer parameter.
