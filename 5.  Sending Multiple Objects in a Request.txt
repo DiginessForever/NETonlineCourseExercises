@@ -1,0 +1,31 @@
+Sending multiple objects in the JSON string is very simple.  We just need to make a slight change to the JSON, like so:
+$("button").click(
+            function () {
+                var customer = [
+                    { Id: null, Name: "Scott", EmailAddress: "Scott@live.com" },
+                    { Id:null, Name: "Steve", EmailAddress: "StevesEmail@live.com" },
+                    { Id:null, Name: "Ben", EmailAddress: "BensEmail@live.com" },
+                    { Id: null, Name: "Amanda", EmailAddress: "AmandasEmail@live.com" }
+                ];
+                $.ajax({
+                    type: "POST",
+                    data: JSON.stringify(customer),
+                    url: "api/Basic",
+                    contentType: "application/json"
+                });
+            });
+
+Note that we put a set of brackets around the object array [], then we put each customer inside of its own curly
+braces {}.  Finally, for every customer but the last one, we put a comma after it.
+
+Now, make one slight change to the Post() method in the BasicController.cs:
+
+Change the method signature to this:
+public HttpResponseMessage Post([FromBody] List<Customer> customers)
+
+All we did there was change "Customer customer" to "List<Customer> customers".
+So we're getting a list of customers instead of a single customer now.
+
+Go ahead and run the project and press the button on the webpage after placing a breakpoint
+in the controller's Post() method.  You will be able to see that the list of customers has 4 objects in it,
+and you'll be able to see the data from the JSON.
