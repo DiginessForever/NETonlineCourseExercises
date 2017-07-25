@@ -1,0 +1,143 @@
+Once you have access to talk to a database, you have the capability to use Entity Framework to create tables in it (called Code First).
+However, ultimately behind the scenes, both Linq to SQL and Entity Framework generate SQL command/query strings and send those strings to the database.
+If you ever have problems with either of those, you will want to turn on logging, which will show you the resulting SQL commands.  Unless you know
+SQL, you will not understand what's going on.  Therefore, we should do a short SQL tutorial to familiarize you with it.
+
+There are two different types of SQL commands:  those that modify the database structure (create/delete tables or add/remove/modify table columns - also called
+DDL for Data Definition Language), and those that add/update/delete or query the data in the table rows (called Data Manipulation Language, abbreviated DML).
+
+In order to send these to the database, open your SQL client (SSMS or Visual Studio) and select
+"New Query" - it will open a query window.  Enter the query text (can copy and paste some of the
+below) and select "execute query" (or "run query", or whatever it is in the specific client you
+are using).
+
+-------------
+
+Here is an example of table creation:
+CREATE TABLE Customer (
+	Id int PRIMARY KEY,
+	name varchar(50),
+	email varchar(50)
+);
+
+-------------
+
+Here are some examples of table modification - note that if the table has data rows in it already, these operations
+can be somewhat destructive:
+ALTER TABLE Customer
+	ALTER COLUMN name varchar(60);
+//Note that when using Oracle or MySQL, this changes to "MODIFY COLUMN name varchar(60)"
+//Or for Oracle 10G and later "MODIFY name varchar(60)"
+
+ALTER TABLE Customer
+	ADD COLUMN LastName varchar(50);
+
+-------
+
+ALTER TABLE Customer
+	DROP COLUMN LastName;
+
+---------
+
+Here is an example of deleting a table (you will of course lose all data in it):
+DROP TABLE Customer;
+
+----------
+
+Now for Data Manipulation Language (DML) - (both DDL and DML are part of Structured Query Language - SQL):
+Let's add some records / rows to the Customer table:
+
+INSERT INTO Customer (Id, Name, Email) VALUES (0, 'Scott', 'SomeEmailAddress@live.com');
+INSERT INTO Customer (Id, Name, Email) VALUES (1, 'Steve', 'MyEmailAddress@somewhere.com');
+INSERT INTO Customer (Id, Name, Email) VALUES (2, 'Ben', 'AnotherEmailAddress@anotherWebsite.org');
+
+----------
+
+What if we had entered one of the email addresses wrong?  Let's modify Ben's email address:
+
+UPDATE Customer
+SET Email = 'ThatEmailAddress@BensWebsite.org'
+WHERE Id = 2;
+
+-----------
+
+Oh, Ben just deleted his account.  Let's get rid of his record (if this command doesn't get a WHERE clause,
+it will delete ALL the rows in a table - be very careful with it!):
+
+DELETE FROM Customer
+WHERE Id = 2;
+
+-----------
+
+Now, let's ask the database for some information.  This gets more powerful the more relationships you have
+between tables and the more data your database has.  Right now we only have one table with two records in it,
+so it's extremely underwhelming at this point:
+
+SELECT * FROM Customer
+WHERE name like '%t%';
+
+or:
+
+SELECT * FROM Customer
+WHERE name = 'Steve'
+
+or:
+
+SELECT * FROM Customer
+WHERE Id = 0;
+
+or:
+
+SELECT * FROM Customer
+WHERE name = 'Steve' or name = 'Scott';
+
+or just:
+SELECT * FROM CUSTOMER;
+
+----------
+
+Let's go over relationships between tables.  If we have customers, then what else might we want to track concerning
+customers?  Customers order products from us.  Let's ignore products to keep things simple and add an Order table:
+
+CREATE TABLE Order (
+	Id int PRIMARY KEY,
+	CustomerId int FOREIGN KEY references Customer(Id),
+	ProductId int,
+	PaidAmount currency
+)
+
+Note the CustomerId - if that number isn't a valid customer Id when you attempt to insert a row into Order,
+it will give you an error and not let you add the row.
+
+Now, let's add some orders:
+
+INSERT INTO Order (Id, CustomerId, ProductId, PaidAmount) VALUES (0, 0, 0, 100.00);
+INSERT INTO Order (Id, CustomerId, ProductId, PaidAmount) VALUES (1, 0, 0, 50.00);
+INSERT INTO Order (Id, CustomerId, ProductId, PaidAmount) VALUES (2, 1, 2, 150.00);
+INSERT INTO Order (Id, CustomerId, ProductId, PaidAmount) VALUES (2, 1, 1, 25.00);
+
+Now, let's use the more powerful features of SQL - by using the relationship between the tables, we can get
+a lot of useful information.  Here I want to see all of Steve's orders:
+
+SELECT Customer.Name, Order.ProductId, Order.PaidAmount
+FROM Customer
+INNER JOIN Order ON Customer.Id = Order.CustomerId
+WHERE Customer.Name = 'Steve';
+
+Here's what we just did - we looked at the two tables for the columns we wanted to show from each:
+I wanted the name of the customer (in this case Steve), the product, and the amount paid.
+I could also have simply specified * there, and it would show me all columns from both tables where the rows
+matched the conditions given.
+Next, I specified the first table after the FROM keyword.
+Then, I used an INNER JOIN to combine it with a related table, and specified the columns that relate them
+(Order.CustomerId is related to Customer.Id)
+Finally, I specified a limiting condition in the WHERE clause - I only want to see customer and order data
+for Steve.  If I didn't specify anything / had no WHERE clause, I'd get everything, but it'd be ordered in
+a fashion showing the relationships.
+
+Note on INNER JOINS:  For inner joins, imagine two circles that only overlap a little.
+One circle contains everything in the Customer table, and the other circle contains everything in Orders.
+For the Steve overlap, the overlapping area contains Steve's customer data and Steve's order data.
+Note that there are other overlaps in any case where a customer has orders.
+
+Note - a LEFT JOIN would have all data included from Customer and only overlap data for Orders.
