@@ -18,6 +18,8 @@ $("button").click(
 
 Note:  You may have to replace the earlier one so it doesn't get confused between which
 one to call when you click the button (or make another button).
+Note on "null" values in the JSON data:  Web API changes these to 0.  Also, if you do not include them,
+for numeric types, it does the same thing, setting the value to 0 for that variable.
 
 Overview:  The customer variable contains JSON data - check out how it's formatted.
 The .ajax section can be used for all the different types of REST functions:
