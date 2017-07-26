@@ -1,0 +1,75 @@
+If you have connected to the Azure database with Visual Studio and run
+the queries from the SQL familiarization exercise, then you should have
+two tables in the database:  Customer and Order.
+
+We only have a tiny bit of code to add to have our controller automatically
+open a database connection and save the objects it gets from the front end.
+
+We're going to create a database context class.  Put this class in your project's
+Model folder (you can reach it from the Solution Explorer window - you can click
+on the right side of Visual Studio to open it) along with Customer.cs:
+
+-------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Core.Objects;
+
+namespace WebApplication2.Models
+{
+    public class AzureDbContext : DbContext
+    {
+        public AzureDbContext() : base("name=AzureSQLServerDatabase")
+        {
+            Database.SetInitializer(new DropCreateDatabaseIfModelChanges<AzureDbContext>());
+        }
+
+        public DbSet<Customer> Customer
+        {
+            get;
+            set;
+        }
+    }
+}
+
+---------------------------------
+
+Note that the "name=AzureSQLServerDatabase" is referring to the connection string
+variable from your project's Web.config file - that's how it knows what URL to go to
+for the database, how to log in, and what driver to use.
+
+Now let's use this context in our controller (make sure the Post() method in the BasicController class
+looks like this:
+
+	// POST /api/<controller>
+        public HttpResponseMessage Post([FromBody] List<Customer> customers)
+	{
+
+            using (var db = new AzureDbContext())
+            {
+                foreach (Customer customer in customers) {
+                    db.Customer.Add(customer);
+                }
+
+                db.SaveChanges();
+            }
+
+            return Request.CreateResponse("Customer saved, thank you.");
+        }
+
+Note:  the foreach loop is going through each customer in the list and individually adding a row
+for each in the Customer table of the database.  Because we've previously setup our connection string
+to use Entity Framework, we do not actually have to create the Customer table ourselves using SQL.
+If we go into the database using our SQL client and drop all tables, then run the Post() request again,
+Entity Framework will automatically create the __MigrationHistory table, add an initialization record
+to it, and also create the Customer table.
+
+How did Entity Framework know how to setup the Customer table?  Well, we have the Customer.cs class with
+all the properties in it.  Then we told Entity Framework about it by adding Customer to the context class above.
+So, any classes that we want to turn into tables need to have references in the context class.
+
+Now, if you change the Customer class, Entity Framework will recreate the database using the new properties.
