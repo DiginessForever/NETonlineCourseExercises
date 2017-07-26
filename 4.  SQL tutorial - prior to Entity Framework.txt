@@ -14,11 +14,15 @@ are using).
 -------------
 
 Here is an example of table creation:
-CREATE TABLE Customer (
-	Id int PRIMARY KEY,
+CREATE TABLE Customers (
+	Id int PRIMARY KEY IDENTITY(1,),
 	name varchar(50),
 	email varchar(50)
 );
+
+Note:  The IDENTITY keyword is specific to SQL Server.  It makes it so that if you insert without specifying an Id,
+it will automatically give it an ID.  In this case the automatic Id values start at 1 and increment by 1 each time
+(that's the meaning of the 1,1 in parenthesis, respectively).
 
 -------------
 
@@ -47,9 +51,12 @@ DROP TABLE Customer;
 Now for Data Manipulation Language (DML) - (both DDL and DML are part of Structured Query Language - SQL):
 Let's add some records / rows to the Customer table:
 
-INSERT INTO Customer (Id, Name, Email) VALUES (0, 'Scott', 'SomeEmailAddress@live.com');
-INSERT INTO Customer (Id, Name, Email) VALUES (1, 'Steve', 'MyEmailAddress@somewhere.com');
-INSERT INTO Customer (Id, Name, Email) VALUES (2, 'Ben', 'AnotherEmailAddress@anotherWebsite.org');
+INSERT INTO Customer (Name, Email) VALUES ('Scott', 'SomeEmailAddress@live.com');
+INSERT INTO Customer (Name, Email) VALUES ('Steve', 'MyEmailAddress@somewhere.com');
+INSERT INTO Customer (Name, Email) VALUES ('Ben', 'AnotherEmailAddress@anotherWebsite.org');
+
+Note that if we did not use IDENTITY on Id when creating the table, we'd have to specify the Id each time when incrementing.
+Because we'd have to specify an Id value that didn't already exist on the table, we'd have to do a query first to figure that out.
 
 ----------
 
@@ -100,10 +107,10 @@ Let's go over relationships between tables.  If we have customers, then what els
 customers?  Customers order products from us.  Let's ignore products to keep things simple and add an Order table:
 
 CREATE TABLE Order (
-	Id int PRIMARY KEY,
+	Id int PRIMARY KEY IDENTITY(1,1),
 	CustomerId int FOREIGN KEY references Customer(Id),
 	ProductId int,
-	PaidAmount currency
+	PaidAmount money
 )
 
 Note the CustomerId - if that number isn't a valid customer Id when you attempt to insert a row into Order,
@@ -111,10 +118,10 @@ it will give you an error and not let you add the row.
 
 Now, let's add some orders:
 
-INSERT INTO Order (Id, CustomerId, ProductId, PaidAmount) VALUES (0, 0, 0, 100.00);
-INSERT INTO Order (Id, CustomerId, ProductId, PaidAmount) VALUES (1, 0, 0, 50.00);
-INSERT INTO Order (Id, CustomerId, ProductId, PaidAmount) VALUES (2, 1, 2, 150.00);
-INSERT INTO Order (Id, CustomerId, ProductId, PaidAmount) VALUES (2, 1, 1, 25.00);
+INSERT INTO Order (CustomerId, ProductId, PaidAmount) VALUES (0, 0, 100.00);
+INSERT INTO Order (CustomerId, ProductId, PaidAmount) VALUES (0, 0, 50.00);
+INSERT INTO Order (CustomerId, ProductId, PaidAmount) VALUES (1, 2, 150.00);
+INSERT INTO Order (CustomerId, ProductId, PaidAmount) VALUES (1, 1, 25.00);
 
 Now, let's use the more powerful features of SQL - by using the relationship between the tables, we can get
 a lot of useful information.  Here I want to see all of Steve's orders:
