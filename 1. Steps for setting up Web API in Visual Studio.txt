@@ -1,16 +1,16 @@
-	I downloaded Visual Studio Community 2017 from https://www.visualstudio.com/downloads/ and set it to
-		install automatically when complete.
-	In the install configuration process, there's a dialogue where you pick what components (SDKs) you want to
-		install with Visual Studio.  I picked, under Web & Cloud, "ASP.NET and web development"
-		"Azure development", and "Data storage and processing" (total install size: 6.9GB, took 2 hours
-		on the network I was on).
-		Then I clicked on the install button.
-		Once the install is done, you can click "launch" to start Visual Studio 2017 Community and then close
-		the installer.
-	Note:  In comparing Enterprise and Community versions, the biggest difference that I can see is that
-		Community lacks CodeLense, a nifty feature that lets you see more data about .NET classes by
-		hovering over them in the code.  Missing it is NOT a show-stopper, may just take a bit longer to
-		troubleshoot problems sometimes.
+Installing Visual Studio Community 2017:
+
+	1.  Download the installer from https://www.visualstudio.com/downloads/
+	2.  Run it once it finishes downloading.
+	
+	3.  In the install configuration process, under Web & Cloud, select:
+	"ASP.NET and web development"
+	"Azure development",
+	"Data storage and processing".
+
+
+----------------------------
+
 
 	Making a new project:
 		Click the "File" menu option in Visual Studio Community 2017 (top left), 
