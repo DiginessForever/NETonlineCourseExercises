@@ -1,0 +1,41 @@
+New Project, Templates, Visual C#, Web:
+	select "ASP.NET Web Aplication (.NET Framework)"
+	select Web API
+
+To Add A Controller: Solution Explorer, right click the project, add, new item, Visual C#, Web, Web API
+	Make sure to include "Controller.cs" at the end of whatever word you choose to make it unique.
+
+Next add an html page:  solution explorer, right click the project, add, HTML Page:
+	Inside the page, paste (inside the body tag):
+		<script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
+	Also paste:
+	<div id="div1"><h2>Let jQuery AJAX Change This Text</h2></div>
+	<button>Get External Content</button>
+
+	<script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
+	<script>
+		$(document).ready(function(){
+			$("button").click(function(){
+				$("#div1").load("api/Basic/Get/0");
+			});
+		});
+	</script>
+
+GET, POST, PUT, DELETE  (REST methods):  Let's setup the mappings to the controller:
+
+Solution Explorer, App_Start folder, WebApiConfig.cs, add these mappings:
+			config.Routes.MapHttpRoute(
+				name: "DefaultApi",
+				routeTemplate: "api/{controller}/{id}",
+				defaults: new { action = "Get", id = RouteParameter.Optional },
+				constraints: new { id = @"\d" }
+			);
+			config.Routes.MapHttpRoute(
+				name: "BasicActionRoute",
+				routeTemplate: "api/{controller}/{action}/{id}",
+				defaults: new { id = RouteParameter.Optional }
+				constraints: new { id = @"\d" }
+			);
+
+
+Front end (HTML/Javascript)  <--> Web API route / object mapper  <--> Controllers  <-->  Database
