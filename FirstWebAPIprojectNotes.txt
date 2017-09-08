@@ -7,8 +7,7 @@ To Add A Controller: Solution Explorer, right click the project, add, new item, 
 
 Next add an html page:  solution explorer, right click the project, add, HTML Page:
 	Inside the page, paste (inside the body tag):
-		<script src="http://code.jquery.com/jquery-2.2.4.min.js"></script>
-	Also paste:
+	
 	<div id="div1"><h2>Let jQuery AJAX Change This Text</h2></div>
 	<button>Get External Content</button>
 
