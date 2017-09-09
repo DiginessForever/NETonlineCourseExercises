@@ -1,4 +1,4 @@
-New Project, Templates, Visual C#, Web:
+New Project, Templates (In VS Community 2017, Visual C# is the top level), Visual C#, Web:
 	select "ASP.NET Web Aplication (.NET Framework)"
 	select Web API
 
